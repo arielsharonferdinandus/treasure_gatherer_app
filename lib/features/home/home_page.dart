@@ -11,13 +11,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final PageController _carouselController = PageController();
+  final Color primaryColor = const Color(0xFF5DB075);
 
-  // Data dummy sesuai dokumentasi awal
   final List<Item> items = [
     Item(id: "1", name: "Monitor LCD 19 Inch", description: "Monitor kantor normal", defectDescription: "Ada baret halus di stand belakang", stars: 5),
     Item(id: "2", name: "Mouse Logi B100", description: "Mouse kabel USB", defectDescription: "Klik kiri agak keras", stars: 3),
-    Item(id: "3", name: "Printer HP InkTank (Rusak)", description: "Mati total, board aman", defectDescription: "Head mampet, dinamo mati", stars: 1), // Otomatis Disassemble
-    Item(id: "4", name: "Adaptor Laptop Asus 19V", description: "Kabel terkelupas sedikit", defectDescription: "Kabel dekat jack disolasi", stars: 4, isManualDisassemble: true), // Manual Disassemble
+    Item(id: "3", name: "Printer HP InkTank (Rusak)", description: "Mati total, board aman", defectDescription: "Head mampet, dinamo mati", stars: 1), 
+    Item(id: "4", name: "Adaptor Laptop Asus 19V", description: "Kabel terkelupas sedikit", defectDescription: "Kabel dekat jack disolasi", stars: 4, isManualDisassemble: true), 
   ];
 
   @override
@@ -34,7 +34,7 @@ class _HomePageState extends State<HomePage> {
           "Treasure Trash Market",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: Colors.teal.shade600,
+        backgroundColor: primaryColor,
         elevation: 2,
         actions: [
           PopupMenuButton<String>(
@@ -55,7 +55,6 @@ class _HomePageState extends State<HomePage> {
       ),
       body: CustomScrollView(
         slivers: [
-          // Bagian Atas: Container Carousel
           SliverToBoxAdapter(
             child: Container(
               margin: const EdgeInsets.all(16.0),
@@ -63,16 +62,12 @@ class _HomePageState extends State<HomePage> {
               child: PageView(
                 controller: _carouselController,
                 children: [
-                  // Carousel 1: Banner Iklan Anti-Oknum Rayap
                   _buildAdBanner(),
-                  // Carousel 2: Banner Video YouTube Disassembling Laptop
                   _buildYoutubeBanner(),
                 ],
               ),
             ),
           ),
-
-          // Judul Section Pool Items
           const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -82,8 +77,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-
-          // Bagian Bawah: Penyatuan 1 Pool Items
           SliverPadding(
             padding: const EdgeInsets.all(16.0),
             sliver: SliverGrid(
@@ -96,7 +89,6 @@ class _HomePageState extends State<HomePage> {
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   final item = items[index];
-                  // Mendeteksi label background berdasarkan status kedisabelannya
                   final bool isDisassemble = item.isForDisassemble;
 
                   return Card(
@@ -104,7 +96,7 @@ class _HomePageState extends State<HomePage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(
-                        color: isDisassemble ? Colors.orange.shade200 : Colors.teal.shade100,
+                        color: isDisassemble ? Colors.orange.shade200 : primaryColor.withOpacity(0.4),
                         width: 1,
                       ),
                     ),
@@ -116,7 +108,7 @@ class _HomePageState extends State<HomePage> {
                           context,
                           MaterialPageRoute(builder: (context) => ItemDetailPage(item: item)),
                         );
-                        setState(() {}); // Refresh jika ada perubahan status bintang/manual disassemble
+                        setState(() {}); 
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
@@ -126,14 +118,14 @@ class _HomePageState extends State<HomePage> {
                             Container(
                               height: 90,
                               decoration: BoxDecoration(
-                                color: isDisassemble ? Colors.orange.shade200 : Colors.teal.shade100,
+                                color: isDisassemble ? Colors.orange.shade200 : primaryColor.withOpacity(0.15),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Center(
                                 child: Icon(
                                   isDisassemble ? Icons.developer_board : Icons.devices,
                                   size: 40,
-                                  color: Colors.black54,
+                                  color: isDisassemble ? Colors.orange.shade800 : primaryColor,
                                 ),
                               ),
                             ),
@@ -162,11 +154,10 @@ class _HomePageState extends State<HomePage> {
                               overflow: TextOverflow.ellipsis,
                             ),
                             const Spacer(),
-                            // Badge Penunjuk Kategori Baru karena tab sudah disatukan
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                               decoration: BoxDecoration(
-                                color: isDisassemble ? Colors.orange.shade700 : Colors.teal.shade700,
+                                color: isDisassemble ? Colors.orange.shade700 : primaryColor,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -189,7 +180,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Widget Pembuat Banner Iklan Konsultan
   Widget _buildAdBanner() {
     return Card(
       elevation: 4,
@@ -229,7 +219,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Widget Pembuat Banner Video Youtube Disassembling
   Widget _buildYoutubeBanner() {
     return Card(
       elevation: 4,
@@ -237,13 +226,12 @@ class _HomePageState extends State<HomePage> {
       color: Colors.grey.shade900,
       child: Stack(
         children: [
-          // Background Ilustrasi atau Warna Hitam Solid ala Media Player
           Positioned.fill(
             child: Opacity(
               opacity: 0.25,
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.teal.shade900,
+                  color: primaryColor,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(Icons.laptop_mac, size: 100, color: Colors.white),

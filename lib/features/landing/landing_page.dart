@@ -67,7 +67,7 @@ class _LandingPageState extends State<LandingPage> {
       bottomSheet: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         height: 80,
-        backgroundColor: Colors.white,
+        color: Colors.white, // PERBAIKAN: Menggunakan color, bukan backgroundColor
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

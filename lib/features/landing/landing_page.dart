@@ -13,6 +13,7 @@ class LandingPage extends StatefulWidget {
 class _LandingPageState extends State<LandingPage> {
   final PageController _pageController = PageController();
   bool isLastPage = false;
+  final Color primaryColor = const Color(0xFF5DB075);
 
   void _completeLanding() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -37,19 +38,25 @@ class _LandingPageState extends State<LandingPage> {
           },
           children: [
             _buildPage(
-              color: Colors.teal.shade100,
+              backgroundColor: primaryColor,
+              textColor: Colors.white,
+              iconColor: Colors.white,
               title: "My Trash is Other's Treasure",
               subtitle: "Jangan buang barang tak terpakai Anda. Apa yang Anda anggap sampah bisa jadi harta karun bagi orang lain.",
               icon: Icons.delete_sweep,
             ),
             _buildPage(
-              color: Colors.green.shade100,
+              backgroundColor: Colors.white,
+              textColor: Colors.black87,
+              iconColor: primaryColor,
               title: "Solusi Hemat & Tepat",
-              subtitle: "Ingin coba pakai suatu barang tapi enggan beli baru? Temukan barang pre-loved dengan deskripsi penggunaan yang transparan hanya di sini.",
-              icon: Icons.shopping_bag_outlined, // Gunakan ikon belanja yang sesuai
+              subtitle: "Ingin mencoba pakai suatu barang tapi enggan beli baru? Temukan barang pre-loved dengan deskripsi penggunaan yang transparan hanya di sini.",
+              icon: Icons.shopping_bag_outlined,
             ),
             _buildPage(
-              color: Colors.red.shade100,
+              backgroundColor: primaryColor,
+              textColor: Colors.white,
+              iconColor: Colors.white,
               title: "Surga Para Engineer",
               subtitle: "Butuh komponen kecil dari barang bekas untuk kanibalan proyek? Fitur 'For Disassemble' siap bantu anda berburu komponen aktif.",
               icon: Icons.construction,
@@ -60,31 +67,32 @@ class _LandingPageState extends State<LandingPage> {
       bottomSheet: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         height: 80,
+        backgroundColor: Colors.white,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             TextButton(
               onPressed: () => _pageController.jumpToPage(2),
-              child: const Text("SKIP"),
+              child: Text("SKIP", style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold)),
             ),
             Center(
               child: SmoothPageIndicator(
                 controller: _pageController,
                 count: 3,
-                effect: const WormEffect(activeDotColor: Colors.teal),
+                effect: WormEffect(activeDotColor: primaryColor, dotColor: primaryColor.withOpacity(0.3)),
               ),
             ),
             isLastPage
                 ? TextButton(
                     onPressed: _completeLanding,
-                    child: const Text("MULAI"),
+                    child: Text("MULAI", style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold)),
                   )
                 : TextButton(
                     onPressed: () => _pageController.nextPage(
                       duration: const Duration(milliseconds: 500),
                       curve: Curves.easeInOut,
                     ),
-                    child: const Text("LANJUT"),
+                    child: Text("LANJUT", style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold)),
                   ),
           ],
         ),
@@ -92,25 +100,32 @@ class _LandingPageState extends State<LandingPage> {
     );
   }
 
-  Widget _buildPage({required Color color, required String title, required String subtitle, required IconData icon}) {
+  Widget _buildPage({
+    required Color backgroundColor,
+    required Color textColor,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
     return Container(
-      color: color,
+      color: backgroundColor,
       padding: const EdgeInsets.all(40),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 100, color: Colors.teal.shade800),
+          Icon(icon, size: 100, color: iconColor),
           const SizedBox(height: 40),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 20),
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16, color: Colors.black54),
+            style: TextStyle(fontSize: 16, color: textColor.withOpacity(0.8), height: 1.4),
           ),
         ],
       ),

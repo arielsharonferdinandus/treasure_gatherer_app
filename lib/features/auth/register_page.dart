@@ -21,6 +21,9 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _retypePasswordController = TextEditingController();
 
+  // Pendefinisian warna utama aplikasi
+  final Color primaryColor = const Color(0xFF5DB075);
+
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -37,7 +40,7 @@ class _RegisterPageState extends State<RegisterPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("OK", style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold)),
+              child: Text("OK", style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold)),
             ),
           ],
         );
@@ -115,7 +118,11 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Daftar Akun Baru"), backgroundColor: Colors.teal),
+      appBar: AppBar(
+        title: const Text("Daftar Akun Baru", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), 
+        backgroundColor: primaryColor,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Form(
@@ -132,10 +139,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
               TextFormField(
                 controller: _usernameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Username',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
+                  border: const OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: primaryColor, width: 2)),
+                  prefixIcon: Icon(Icons.person, color: primaryColor),
                 ),
                 validator: (val) => val == null || val.isEmpty ? "Username tidak boleh kosong" : null,
               ),
@@ -144,10 +152,11 @@ class _RegisterPageState extends State<RegisterPage> {
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Email',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
+                  border: const OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: primaryColor, width: 2)),
+                  prefixIcon: Icon(Icons.email, color: primaryColor),
                 ),
                 validator: (val) {
                   if (val == null || val.isEmpty) return "Email tidak boleh kosong";
@@ -162,11 +171,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 controller: _phoneController,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Nomor HP',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: primaryColor, width: 2)),
                   prefixText: '+62 ',
-                  prefixIcon: Icon(Icons.phone),
+                  prefixIcon: Icon(Icons.phone, color: primaryColor),
                   hintText: '8xxxxxxxx',
                 ),
                 validator: (val) {
@@ -181,10 +191,11 @@ class _RegisterPageState extends State<RegisterPage> {
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Password',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock),
+                  border: const OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: primaryColor, width: 2)),
+                  prefixIcon: Icon(Icons.lock, color: primaryColor),
                 ),
                 validator: (val) {
                   if (val == null || val.isEmpty) return "Password tidak boleh kosong";
@@ -205,10 +216,11 @@ class _RegisterPageState extends State<RegisterPage> {
               TextFormField(
                 controller: _retypePasswordController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Ulangi Password',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock_clock_outlined),
+                  border: const OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: primaryColor, width: 2)),
+                  prefixIcon: Icon(Icons.lock_clock_outlined, color: primaryColor),
                 ),
                 validator: (val) {
                   if (val == null || val.isEmpty) return "Konfirmasi password tidak boleh kosong";
@@ -220,11 +232,12 @@ class _RegisterPageState extends State<RegisterPage> {
 
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
+                  backgroundColor: primaryColor,
                   padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 onPressed: _register,
-                child: const Text("Daftar Sekarang", style: TextStyle(color: Colors.white, fontSize: 16)),
+                child: const Text("Daftar Sekarang", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
               ),
               const SizedBox(height: 16),
               
@@ -237,7 +250,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     onPressed: () {
                       Navigator.pop(context); // Kembali ke LoginPage dengan aman
                     },
-                    child: const Text("Login", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal)),
+                    child: Text("Login", style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor)),
                   ),
                 ],
               ),

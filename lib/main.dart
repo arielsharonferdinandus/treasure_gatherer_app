@@ -21,7 +21,10 @@ class MyApp extends StatelessWidget {
       title: "Other's Trash My Treasure",
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.teal,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF5DB075),
+          primary: const Color(0xFF5DB075),
+        ),
         useMaterial3: true,
       ),
       home: isFirstTime ? const LandingPage() : const LoginPage(),

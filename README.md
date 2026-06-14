@@ -1,4 +1,4 @@
-# Treasure Gatherer App (Treasure Trash Market)
+# Treasure Gatherer App (TG Market)
 
 A Flutter-based secondary market platform built around a sustainable electronics lifestyle. The application provides a structured marketplace where one person's decommissioned or defective hardware becomes another person's valuable core components.
 
@@ -14,6 +14,8 @@ The platform is designed around a single core philosophy:
 2. **Transparent Pre-Loved Hardware:** Provide budget-conscious buyers with functional goods backed by crystal-clear, transparent condition logging.
 3. **The Engineer's Component Haven:** Serve as an active repository for developers, hardware engineers, and builders looking to harvest microcomponents, ICs, or casings from non-functional hardware.
 
+---
+UI Design from Figma: https://www.figma.com/design/gJwOnh2ps3oXtUV8AVgIlN/Mobile-Design?node-id=221-1864&t=3aGtP82ANGyWBgWs-1
 ---
 
 ## UX Principles Applied: User Authentication

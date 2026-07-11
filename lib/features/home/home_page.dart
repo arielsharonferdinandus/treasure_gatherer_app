@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'item_model.dart';
-import '../item_detail/item_detail_page.dart';
+import 'package:provider/provider.dart';
+import '../../providers/item_provider.dart';
+import '../../data/models/item_model.dart';
+import '../product/product_page.dart';
+import '../product/register_page.dart';
+import '../../core/shared_widgets/item_image.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,12 +17,14 @@ class _HomePageState extends State<HomePage> {
   final PageController _carouselController = PageController();
   final Color primaryColor = const Color(0xFF5DB075);
 
-  final List<Item> items = [
-    Item(id: "1", name: "Monitor LCD 19 Inch", description: "Monitor kantor normal", defectDescription: "Ada baret halus di stand belakang", stars: 5),
-    Item(id: "2", name: "Mouse Logi B100", description: "Mouse kabel USB", defectDescription: "Klik kiri agak keras", stars: 3),
-    Item(id: "3", name: "Printer HP InkTank (Rusak)", description: "Mati total, board aman", defectDescription: "Head mampet, dinamo mati", stars: 1), 
-    Item(id: "4", name: "Adaptor Laptop Asus 19V", description: "Kabel terkelupas sedikit", defectDescription: "Kabel dekat jack disolasi", stars: 4, isManualDisassemble: true), 
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Fetch items from the API
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ItemProvider>().fetchItems();
+    });
+  }
 
   @override
   void dispose() {
@@ -28,6 +34,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final itemProvider = context.watch<ItemProvider>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -37,6 +45,11 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: primaryColor,
         elevation: 2,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: () => context.read<ItemProvider>().refresh(),
+            tooltip: "Muat ulang data",
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: Colors.white),
             onSelected: (value) {
@@ -53,7 +66,60 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: CustomScrollView(
+      body: _buildBody(itemProvider),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: primaryColor,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const RegisterPage()),
+          );
+        },
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text("Jual Barang", style: TextStyle(color: Colors.white)),
+      ),
+    );
+  }
+
+  Widget _buildBody(ItemProvider itemProvider) {
+    // Initial load
+    if (itemProvider.isLoading && itemProvider.items.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // Load failed and nothing to show
+    if (itemProvider.errorMessage != null && itemProvider.items.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.cloud_off, size: 48, color: Colors.grey),
+              const SizedBox(height: 12),
+              Text(
+                itemProvider.errorMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => context.read<ItemProvider>().fetchItems(),
+                style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+                child: const Text("Coba Lagi", style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final items = itemProvider.items;
+
+    return RefreshIndicator(
+      onRefresh: () => context.read<ItemProvider>().refresh(),
+      color: primaryColor,
+      child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
             child: Container(
@@ -77,106 +143,112 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.all(16.0),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.72,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
+          if (items.isEmpty)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(32.0),
+                child: Center(child: Text("Belum ada barang tersedia.")),
               ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final item = items[index];
-                  final bool isDisassemble = item.isForDisassemble;
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.all(16.0),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.72,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final item = items[index];
+                    final bool isDisassemble = item.isForDisassemble;
 
-                  return Card(
-                    color: isDisassemble ? Colors.orange.shade50 : Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(
-                        color: isDisassemble ? Colors.orange.shade200 : primaryColor.withOpacity(0.4),
-                        width: 1,
-                      ),
-                    ),
-                    elevation: 3,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
-                      onTap: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ItemDetailPage(item: item)),
-                        );
-                        setState(() {}); 
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              height: 90,
-                              decoration: BoxDecoration(
-                                color: isDisassemble ? Colors.orange.shade200 : primaryColor.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  isDisassemble ? Icons.developer_board : Icons.devices,
-                                  size: 40,
-                                  color: isDisassemble ? Colors.orange.shade800 : primaryColor,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              item.name,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: List.generate(5, (starIndex) {
-                                return Icon(
-                                  starIndex < item.stars ? Icons.star : Icons.star_border,
-                                  color: Colors.amber,
-                                  size: 14,
-                                );
-                              }),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              "Defect: ${item.defectDescription}",
-                              style: const TextStyle(fontSize: 11, color: Colors.redAccent),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: isDisassemble ? Colors.orange.shade700 : primaryColor,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                isDisassemble ? "Disassemble" : "Layak Pakai",
-                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
+                    return Card(
+                      color: isDisassemble ? Colors.orange.shade50 : Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: isDisassemble ? Colors.orange.shade200 : primaryColor.withOpacity(0.4),
+                          width: 1,
                         ),
                       ),
-                    ),
-                  );
-                },
-                childCount: items.length,
+                      elevation: 3,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ProductPage(item: item)),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildThumbnail(item, isDisassemble),
+                              const SizedBox(height: 8),
+                              Text(
+                                item.name,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: List.generate(5, (starIndex) {
+                                  return Icon(
+                                    starIndex < item.stars ? Icons.star : Icons.star_border,
+                                    color: Colors.amber,
+                                    size: 14,
+                                  );
+                                }),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                "Defect: ${item.defectDescription}",
+                                style: const TextStyle(fontSize: 11, color: Colors.redAccent),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const Spacer(),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: isDisassemble ? Colors.orange.shade700 : primaryColor,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  isDisassemble ? "Disassemble" : "Layak Pakai",
+                                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  childCount: items.length,
+                ),
               ),
             ),
-          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildThumbnail(Item item, bool isDisassemble) {
+    return ItemImage(
+      source: item.thumbnailUrl,
+      height: 90,
+      width: double.infinity,
+      borderRadius: BorderRadius.circular(8),
+      placeholderIcon: isDisassemble ? Icons.developer_board : Icons.devices,
+      placeholderColor: isDisassemble ? Colors.orange.shade800 : primaryColor,
+      placeholderBackground: isDisassemble ? Colors.orange.shade200 : primaryColor.withOpacity(0.15),
     );
   }
 

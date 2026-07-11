@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import '../../providers/auth_provider.dart';
 import '../auth/login_page.dart';
 
 class LandingPage extends StatefulWidget {
@@ -15,9 +16,8 @@ class _LandingPageState extends State<LandingPage> {
   bool isLastPage = false;
   final Color primaryColor = const Color(0xFF5DB075);
 
-  void _completeLanding() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isFirstTime', false);
+  Future<void> _completeLanding() async {
+    await context.read<AuthProvider>().completeOnboarding();
     if (mounted) {
       Navigator.pushReplacement(
         context,
@@ -67,7 +67,7 @@ class _LandingPageState extends State<LandingPage> {
       bottomSheet: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         height: 80,
-        color: Colors.white, // PERBAIKAN: Menggunakan color, bukan backgroundColor
+        color: Colors.white,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

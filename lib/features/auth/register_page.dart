@@ -1,8 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'login_page.dart'; // Mengimport login page untuk jalan balik
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -11,17 +10,15 @@ class RegisterPage extends StatefulWidget {
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
-// PERBAIKAN: Menggunakan _RegisterPageState, bukan _LoginPageState
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
-  
+
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _retypePasswordController = TextEditingController();
 
-  // Pendefinisian warna utama aplikasi
   final Color primaryColor = const Color(0xFF5DB075);
 
   void _showErrorDialog(String message) {
@@ -48,16 +45,7 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Future<List<dynamic>> _getRegisteredUsers() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? usersJson = prefs.getString('registered_users');
-    if (usersJson != null) {
-      return jsonDecode(usersJson);
-    }
-    return [];
-  }
-
-  void _register() async {
+  Future<void> _register() async {
     String password = _passwordController.text;
 
     final hasUppercase = RegExp(r'[A-Z]');
@@ -85,41 +73,35 @@ class _RegisterPageState extends State<RegisterPage> {
 
     if (!_formKey.currentState!.validate()) return;
 
-    List<dynamic> usersList = await _getRegisteredUsers();
-    String inputUsername = _usernameController.text.trim();
-    String inputEmail = _emailController.text.trim().toLowerCase();
-    String formattedPhone = "+62${_phoneController.text.trim()}";
+    final authProvider = context.read<AuthProvider>();
 
-    bool isUsernameTaken = usersList.any((user) => user['username'].toString().toLowerCase() == inputUsername.toLowerCase());
-    if (isUsernameTaken) {
-      _showErrorDialog("Username sudah terdaftar. Silakan gunakan username lain.");
-      return;
-    }
+    final success = await authProvider.register(
+      username: _usernameController.text.trim(),
+      email: _emailController.text.trim().toLowerCase(),
+      phone: "+62${_phoneController.text.trim()}",
+      password: password,
+    );
 
-    Map<String, String> newUser = {
-      "username": inputUsername,
-      "email": inputEmail,
-      "phone": formattedPhone,
-      "password": password,
-    };
+    if (!mounted) return;
 
-    usersList.add(newUser);
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('registered_users', jsonEncode(usersList));
-
-    if (mounted) {
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Pendaftaran Berhasil. Silakan Login.")),
       );
       Navigator.pop(context);
+    } else {
+      // e.g. username already taken — message comes from AuthProvider
+      _showErrorDialog(authProvider.errorMessage ?? "Pendaftaran gagal.");
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<AuthProvider>().isLoading;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Daftar Akun Baru", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), 
+        title: const Text("Daftar Akun Baru", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -236,19 +218,24 @@ class _RegisterPageState extends State<RegisterPage> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                onPressed: _register,
-                child: const Text("Daftar Sekarang", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                onPressed: isLoading ? null : _register,
+                child: isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Text("Daftar Sekarang", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
               ),
               const SizedBox(height: 16),
-              
-              // PERBAIKAN NAVIGASI AMAN: Menambahkan opsi balik ke Login
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text("Sudah punya akun? "),
                   TextButton(
                     onPressed: () {
-                      Navigator.pop(context); // Kembali ke LoginPage dengan aman
+                      Navigator.pop(context);
                     },
                     child: Text("Login", style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor)),
                   ),

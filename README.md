@@ -1,61 +1,122 @@
-# Treasure Gatherer App (TG Market)
+# Treasure Gatherer App
 
-A Flutter-based secondary market platform built around a sustainable electronics lifestyle. The application provides a structured marketplace where one person's decommissioned or defective hardware becomes another person's valuable core components.
+> Tugas Ujian Akhir Semester (UAS) — Mata Kuliah Mobile Computing
+> Nama: Ariel Sharon Ferdinandus — NIM: 24130500007
 
----
+Aplikasi mobile marketplace barang bekas ("harta karun") yang dikembangkan menggunakan Flutter, melanjutkan desain UI/UX dari UTS. Konsep aplikasi: pengguna dapat menjual dan membeli barang bekas, dengan sistem rating bintang otomatis yang menurun setiap kali barang terdeteksi dijual kembali oleh pembeli sebelumnya melalui aplikasi — barang dengan rating rendah otomatis dikategorikan ke dalam **"For Disassemble"**, ditujukan untuk engineer yang mencari komponen aktif untuk dibongkar.
 
-## Project Concept
+## 🔗 Tautan Penting
 
-The platform is designed around a single core philosophy:
-> **"Other's Trash is My Treasure, and My Trash is Other's Treasure"**
+- **Desain Figma (Public):** https://www.figma.com/design/gJwOnh2ps3oXtUV8AVgIlN/Mobile-Design?node-id=221-1864&t=3aGtP82ANGyWBgWs-1
+- **Repository GitHub:** https://github.com/arielsharonferdinandus/treasure_gatherer_app
 
-### The Core Mission
-1. **Reduce E-Waste:** Offer an alternative to disposal by giving users a platform to pass down hardware they no longer need.
-2. **Transparent Pre-Loved Hardware:** Provide budget-conscious buyers with functional goods backed by crystal-clear, transparent condition logging.
-3. **The Engineer's Component Haven:** Serve as an active repository for developers, hardware engineers, and builders looking to harvest microcomponents, ICs, or casings from non-functional hardware.
+## 📱 Fitur Utama
 
----
-UI Design from Figma:
-> https://www.figma.com/design/gJwOnh2ps3oXtUV8AVgIlN/Mobile-Design?node-id=221-1864&t=3aGtP82ANGyWBgWs-1
----
+1. **Onboarding & Autentikasi**
+   - Landing page (onboarding carousel, ditampilkan sekali)
+   - Login & Register dengan validasi input (format email, kekuatan password, dsb.)
+2. **Halaman Utama (Home)**
+   - Menampilkan daftar barang yang diambil langsung dari REST API (MockAPI)
+   - Kategori otomatis: barang layak pakai vs. barang "For Disassemble"
+   - Pull-to-refresh dan retry saat gagal memuat data
+3. **Detail Barang (Product Page)**
+   - Menampilkan data lengkap barang: foto, harga, deskripsi, kondisi/defect, rating bintang
+   - Tombol **Beli Sekarang** dengan simulasi proses pembelian (countdown 5 detik) dan **Tambah ke Keranjang**
+   - Tombol **Edit** untuk memperbarui data barang
+4. **Jual Barang (Sell/Register)**
+   - Form pendaftaran barang baru lengkap dengan foto wajib (kamera/galeri)
+   - **Deteksi otomatis riwayat pembelian**: jika nama barang yang didaftarkan cocok dengan barang yang pernah dibeli pengguna melalui aplikasi, sistem otomatis menandainya sebagai barang re-sell dan meminta info durasi pemakaian — rating bintang awal akan dikurangi sesuai aturan. Barang benar-benar baru otomatis mendapat rating 5 bintang.
+5. **Notifikasi Pembelian**
+   - Setiap pembelian berhasil disimulasikan akan memicu **local notification** di perangkat.
 
-## UX Principles Applied: User Authentication
+## 🏗️ Software Architecture
 
-The `features/landing/` and `features/auth/` modules utilize specific UX design principles to ensure a seamless, high-retention onboarding experience.
+Project ini menerapkan **MVC (Model-View-Controller)**, dengan Provider berperan sebagai lapisan Controller:
 
-### 1. The Landing Page Flow (Onboarding)
-* **Progressive Concept Disclosure:** Uses a 3-page interactive onboarding carousel (`smooth_page_indicator` with a `WormEffect`) to tell the app's story sequentially (Concept $\rightarrow$ Transparency $\rightarrow$ Component Harvesting) rather than overwhelming users on a single screen.
-* **Persistent Friction Reduction:** A permanent `SKIP` action lets returning users bypass onboarding instantly, while contextual action changes (`LANJUT` dynamically switching to `MULAI` on the final panel) guide the user smoothly through completion.
-* **State Persistence:** Integrated with `shared_preferences`. The onboarding screen is marked as completed (`isFirstTime = false`) upon reaching the login gate, saving device memory and keeping future entry flows direct.
-
-### 2. Login Page Architecture
-* **Unified Identifier Input:** The input field allows either an **Email** or **Username**, reducing cognitive load by removing the need for separate fields.
-* **Inline Form Validation:** Employs Flutter’s reactive form validation state (`_formKey.currentState!.validate()`). Errors are caught locally before sending authentication data downstream, preventing unnecessary loading cycles.
-
-### 3. Register Page Architecture & Password Defense-in-Depth
-* **Real-time Local Constraint Mapping:** Password criteria are listed explicitly within the visual hierarchy rather than hidden behind an info tool-tip.
-* **RegEx Validation Hooks:** Employs multiple regular expressions (`RegExp`) checking for:
-  * Minimum 8 characters
-  * Uppercase letter matching (`[A-Z]`)
-  * Lowercase letter matching (`[a-z]`)
-  * Numeric digit matching (`[0-9]`)
-  * Special character structural scanning (`[!@#$%^&*(),.?":{}|<>]`)
-* **Contextual Error Handlers:** If validation checks fail, a highly visible system alert dialog flashes the exact missing requirement to the user.
-* **Localized Input Filters:** The phone input handles automated structural formatting, utilizing `FilteringTextInputFormatter.digitsOnly` alongside a persistent prefix (`+62`) to enforce region-locked inputs directly.
-
----
-
-## Technical Architecture & Current Progress
-
-### Folder Structure
-```text
+```
 lib/
-├── main.dart             # Core initialization & Shared Preferences router
+├── main.dart                     # Entry point, setup MultiProvider
 ├── core/
-│   ├── constants/        # Style guides, text themes, and color definitions
-│   └── shared_widgets/   # Reusable UI elements (custom buttons, cards)
-└── features/
-    ├── landing/          # Onboarding carousel with smooth indicators
-    ├── auth/             # Login & Account Registration logic with JSON serialization
-    ├── home/             # Unified item grid layout featuring announcement banners
-    └── item_detail/      # Specific item metrics and systemic star reduction engine
+│   ├── shared_widgets/           # Widget reusable (mis. ItemImage)
+│   └── utils/                    # Helper (mis. ImagePickerHelper)
+├── data/
+│   ├── models/                   # MODEL — Item, UserModel
+│   └── services/                 # Akses data — AuthService, ItemService, NotificationService
+├── providers/                    # CONTROLLER — AuthProvider, ItemProvider (State Management)
+└── features/                     # VIEW — UI murni, tidak ada business logic
+    ├── landing/
+    ├── auth/                     # login_page.dart, register_page.dart
+    ├── home/                     # home_page.dart
+    └── product/                  # product_page.dart, register_page.dart, edit_page.dart
+```
+
+**Separation of Concerns:** Views hanya memanggil `context.watch/read<Provider>()` untuk membaca state dan memicu aksi — tidak ada logika bisnis atau akses `SharedPreferences`/HTTP langsung di dalam widget.
+
+## ⚙️ State Management
+
+Menggunakan **Provider** (`ChangeNotifier`) melalui dua provider utama:
+
+- **`AuthProvider`** — status login, sesi pengguna, dan riwayat pembelian (untuk deteksi resell)
+- **`ItemProvider`** — daftar barang, status loading/error, serta operasi create/update/delete barang
+
+Kedua provider didaftarkan secara global lewat `MultiProvider` di `main.dart`, sehingga seluruh halaman dapat bereaksi otomatis terhadap perubahan data tanpa `setState` manual.
+
+## 🌐 Integrasi REST API
+
+Menggunakan **MockAPI** (`https://[project-id].mockapi.io/api/items`) sebagai backend untuk fitur utama daftar barang:
+
+- `GET /items` — mengambil daftar barang (ditampilkan di Home)
+- `POST /items` — mendaftarkan barang baru (fitur Jual Barang)
+- `PUT /items/:id` — memperbarui data barang (fitur Edit)
+- `DELETE /items/:id` — menghapus barang dari katalog saat berhasil dibeli
+
+## 💾 Local Storage
+
+Menggunakan **SharedPreferences** untuk:
+
+- Status onboarding (`isFirstTime`)
+- Status login (`isLoggedIn`) dan data akun pengguna yang sedang aktif
+- Daftar akun terdaftar (username, email, nomor HP, password)
+- **Riwayat nama barang yang pernah dibeli per pengguna** — digunakan untuk mendeteksi otomatis apakah barang yang didaftarkan ulang adalah hasil pembelian sebelumnya
+
+## 📷 Mobile Feature
+
+Aplikasi ini mengimplementasikan **dua** fitur perangkat (rubrik hanya mensyaratkan minimal satu):
+
+1. **Camera** — pengguna wajib mengambil foto barang (via kamera atau galeri) saat mendaftarkan/mengedit barang, menggunakan `image_picker`. Foto disimpan sebagai base64 karena MockAPI tidak menyediakan endpoint upload file.
+2. **Local Notification** — notifikasi otomatis muncul setiap kali simulasi pembelian berhasil, menggunakan `flutter_local_notifications`.
+
+## 🛠️ Tech Stack
+
+| Kategori | Package |
+|---|---|
+| State Management | `provider` |
+| HTTP Client | `http` |
+| Local Storage | `shared_preferences` |
+| Camera/Gallery | `image_picker` |
+| Local Notification | `flutter_local_notifications` |
+| Onboarding Indicator | `smooth_page_indicator` |
+
+## 🚀 Cara Menjalankan Project
+
+```bash
+git clone https://github.com/arielsharonferdinandus/treasure_gatherer_app.git
+cd treasure_gatherer_app
+flutter pub get
+flutter run
+```
+
+## 📸 Screenshot Aplikasi
+
+| Landing | Login | Home |
+|---|---|---|
+| `[screenshot]` | `[screenshot]` | `[screenshot]` |
+
+| Product Detail | Jual Barang | Notifikasi |
+|---|---|---|
+| `[screenshot]` | `[screenshot]` | `[screenshot]` |
+
+## 👨‍💻 Rencana Pengembangan Selanjutnya
+
+- Migrasi status "sold" barang ke API (saat ini barang yang dibeli langsung dihapus dari katalog demi kesederhanaan, mengingat batas waktu pengerjaan)
+- Autentikasi berbasis token/backend sungguhan menggantikan penyimpanan lokal

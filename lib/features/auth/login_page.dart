@@ -1,6 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../home/home_page.dart';
 import 'register_page.dart';
 
@@ -17,44 +17,40 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final Color primaryColor = const Color(0xFF5DB075);
 
-  void _login() async {
+  Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? usersJson = prefs.getString('registered_users');
-    List<dynamic> usersList = usersJson != null ? jsonDecode(usersJson) : [];
+    final authProvider = context.read<AuthProvider>();
 
-    String inputIdentifier = _identifierController.text.trim();
-    String inputPassword = _passwordController.text;
+    final success = await authProvider.login(
+      _identifierController.text.trim(),
+      _passwordController.text,
+    );
 
-    bool isAuthenticated = false;
-    for (var user in usersList) {
-      if ((user['username'] == inputIdentifier || user['email'] == inputIdentifier) &&
-          user['password'] == inputPassword) {
-        isAuthenticated = true;
-        break;
-      }
-    }
+    if (!mounted) return;
 
-    if (mounted) {
-      if (isAuthenticated) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Login Berhasil")),
-        );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Email/Username atau Password salah")),
-        );
-      }
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Login Berhasil")),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.errorMessage ?? "Login gagal"),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Watches isLoading so the button can show a spinner reactively.
+    final isLoading = context.watch<AuthProvider>().isLoading;
+
     return Scaffold(
       backgroundColor: primaryColor,
       body: Center(
@@ -109,8 +105,20 @@ class _LoginPageState extends State<LoginPage> {
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      onPressed: _login,
-                      child: const Text("Masuk", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      onPressed: isLoading ? null : _login,
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              "Masuk",
+                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
                     ),
                     const SizedBox(height: 16),
                     Row(

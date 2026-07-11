@@ -120,3 +120,5 @@ flutter run
 
 - Migrasi status "sold" barang ke API
 - Autentikasi berbasis token/backend sungguhan menggantikan penyimpanan lokal
+- Account Profile and Edit Account pages
+- logout account

@@ -110,13 +110,13 @@ flutter run
 
 | Landing | Login | Home |
 |---|---|---|
-| `[screenshot]` | `[screenshot]` | `[screenshot]` |
+| <img width="720" height="1600" alt="image" src="https://github.com/user-attachments/assets/3a22622b-5ab7-4ab4-a80f-032b5bc149fd" /> | <img width="720" height="1600" alt="image" src="https://github.com/user-attachments/assets/c9625d4e-e21a-41cc-b7b3-84afce324f7f" /> | <img width="720" height="1600" alt="image" src="https://github.com/user-attachments/assets/5cd17b13-22f5-4224-8a14-e86f310a3182" />|
 
 | Product Detail | Jual Barang | Notifikasi |
 |---|---|---|
-| `[screenshot]` | `[screenshot]` | `[screenshot]` |
+| <img width="720" height="1600" alt="image" src="https://github.com/user-attachments/assets/261fa947-0cd3-456b-976a-0300b2ce9cb3" /> | <img width="720" height="1600" alt="image" src="https://github.com/user-attachments/assets/c3826b7d-79cd-40ee-a6a6-481c0c1164c3" /> | <img width="720" height="1600" alt="image" src="https://github.com/user-attachments/assets/ff2da56c-6148-47d1-9dd1-d0bad8424d01" /> |
 
 ## 👨‍💻 Rencana Pengembangan Selanjutnya
 
-- Migrasi status "sold" barang ke API (saat ini barang yang dibeli langsung dihapus dari katalog demi kesederhanaan, mengingat batas waktu pengerjaan)
+- Migrasi status "sold" barang ke API
 - Autentikasi berbasis token/backend sungguhan menggantikan penyimpanan lokal
